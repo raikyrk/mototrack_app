@@ -20,36 +20,35 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
   List<String> _conferentes = [];
   List<Map<String, dynamic>> _motoboys = [];
   bool _isLoading = true;
-
-  AnimationController? _animationController;
-  Animation<double>? _fadeAnimation;
-  Animation<Offset>? _slideAnimation;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     _fetchData();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController!, curve: Curves.easeOut),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController!, curve: Curves.easeOut));
-    
-    _animationController!.forward();
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+
+    _animationController.forward();
   }
 
   @override
   void dispose() {
-    _animationController?.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -84,7 +83,6 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
   Future<void> _selectTime(BuildContext context) async {
     TimeOfDay initialTime = _arrivalTime ?? TimeOfDay.now();
     Duration initialDuration = Duration(hours: initialTime.hour, minutes: initialTime.minute);
-
     await showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -171,16 +169,15 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
     setState(() {
       _selectedMotoboy = selectedMotoboy;
       _selectedPlaca = null;
-
       if (selectedMotoboy != null) {
         final motoboy = _motoboys.firstWhere(
           (m) => m['nome'] == selectedMotoboy,
-          orElse: () => <String, Object>{}, // Correção do tipo para Map<String, Object>
+          orElse: () => <String, Object>{},
         );
-        print('Motoboy selecionado: $motoboy'); // Log para depuração
+        print('Motoboy selecionado: $motoboy');
         if (motoboy.isNotEmpty && motoboy['placa'] != null) {
           _selectedPlaca = motoboy['placa'] as String;
-          print('Placa definida: $_selectedPlaca'); // Log para confirmar a placa
+          print('Placa definida: $_selectedPlaca');
         }
       }
     });
@@ -197,12 +194,10 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
         );
         return;
       }
-
       final String date = DateFormat('dd/MM/yyyy').format(DateTime.now());
       final String timestamp = DateTime.now().toIso8601String();
-      final String arrivalTime = 
+      final String arrivalTime =
           '${_arrivalTime!.hour.toString().padLeft(2, '0')}:${_arrivalTime!.minute.toString().padLeft(2, '0')}';
-
       try {
         final response = await ApiService().saveRegistro({
           'data_registro': date,
@@ -212,7 +207,6 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
           'placa': _selectedPlaca,
           'horario_chegada': arrivalTime,
         });
-
         if (mounted) {
           if (response['success']) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -273,14 +267,13 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
                 children: [
                   _buildHeader(),
                   const SizedBox(height: 16),
-                  
                   if (_isLoading)
                     const Center(child: CircularProgressIndicator())
                   else
                     FadeTransition(
-                      opacity: _fadeAnimation ?? AlwaysStoppedAnimation(1.0),
+                      opacity: _fadeAnimation,
                       child: SlideTransition(
-                        position: _slideAnimation ?? AlwaysStoppedAnimation(Offset.zero),
+                        position: _slideAnimation,
                         child: Center(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 672),
@@ -289,9 +282,7 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
                         ),
                       ),
                     ),
-                  
                   const SizedBox(height: 24),
-                  
                   _buildFooter(),
                 ],
               ),
@@ -378,7 +369,6 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
               ],
             ),
           ),
-          
           Padding(
             padding: const EdgeInsets.all(32),
             child: Form(
@@ -402,7 +392,6 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
                   _buildDropdownField(
                     label: 'Conferente *',
                     icon: FeatherIcons.userCheck,
@@ -412,7 +401,6 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
                     validator: (value) => value == null ? 'Selecione um conferente' : null,
                   ),
                   const SizedBox(height: 24),
-                  
                   _buildDropdownField(
                     label: 'Motoboy *',
                     icon: FeatherIcons.users,
@@ -422,16 +410,12 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
                     validator: (value) => value == null ? 'Selecione um motoboy' : null,
                   ),
                   const SizedBox(height: 24),
-                  
                   _buildPlacaField(),
                   const SizedBox(height: 24),
-                  
                   _buildTimeField(),
                   const SizedBox(height: 32),
-                  
                   _buildInfoBox(),
                   const SizedBox(height: 32),
-                  
                   _buildActionButtons(),
                 ],
               ),
@@ -485,8 +469,8 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: _selectedPlaca != null 
-                        ? const Color(0xFFFF6A00) 
+                    color: _selectedPlaca != null
+                        ? const Color(0xFFFF6A00)
                         : const Color(0xFF6B7280),
                   ),
                 ),
@@ -682,8 +666,8 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: _arrivalTime != null 
-                          ? const Color(0xFF22C55E) 
+                      color: _arrivalTime != null
+                          ? const Color(0xFF22C55E)
                           : const Color(0xFF6B7280),
                     ),
                   ),
@@ -777,7 +761,6 @@ class _NewRecordScreenState extends State<NewRecordScreen> with SingleTickerProv
           ),
         ),
         const SizedBox(width: 12),
-        
         Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
